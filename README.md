@@ -18,7 +18,7 @@ This API is intended to make the AI system accessible to the public.
 ## How to run the docker image
 ```bash
 # Run docker, open your browser and visit https://localhost:3000
-docker run -it -p 3000:3000 openbcl/beskid-api
+docker run -it -p 3000:3000 ghcr.io/openbcl/beskid-backend:main
 ```
 
 ## How to build this app
