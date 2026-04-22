@@ -38,7 +38,6 @@ export class TaskService {
     const setting: TaskSetting = {
       ...createTask.setting,
       name: rawExperiments[createTask.setting.id].name,
-      conditionMU: rawExperiments[createTask.setting.id].conditionMU,
     };
     const task = new Task(sessionId, createTask.values, setting);
     task.saveInputfile();
@@ -67,18 +66,24 @@ export class TaskService {
     const timestampRegEx = /(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})-(\d{2})/;
     const { taskDirectory } = this.findDirectories(sessionId, taskId);
     const inputFilename = readdirSync(taskDirectory).find((name) => name.match(/input_.+?.txt/));
-    const di = inputFilename.match(this.composedRegex(/input_/, timestampRegEx, /_(.+?)_(.+?)_(.+?).txt/));
+    const di = inputFilename.match(this.composedRegex(/input_/, timestampRegEx, /_(.+?)_(.+?).txt/));
+    const settingPath = join(taskDirectory, 'setting.json');
     if (!inputFilename || !di) {
       Logger.error(`Inputfile of task "${taskId}" not found`, 'TaskService');
       throw new InternalServerErrorException();
     }
+    if (!existsSync(settingPath)) {
+      Logger.error(`Setting file of task "${taskId}" not found`, 'TaskService');
+      throw new InternalServerErrorException();
+    }
     const date = new Date(Date.parse(`${di[1]}-${di[2]}-${di[3]}T${di[4]}:${di[5]}:${di[6]}.000Z`));
+    const fileSetting = JSON.parse(readFileSync(settingPath, encoding)) as TaskSetting;
     const setting: TaskSetting = {
+      ...fileSetting,
       id: di[8],
       name: rawExperiments[di[8]].name,
       resolution: Number.parseInt(di[7]),
-      condition: Number.parseFloat(di[9]),
-      conditionMU: rawExperiments[di[8]].conditionMU,
+      conditions: fileSetting.conditions || {},
     };
     const results = readdirSync(taskDirectory)
       .filter((name) => name.match(/result_.+?.json/))
@@ -126,9 +131,10 @@ export class TaskService {
   runTask(sessionId: UUID, taskId: UUID, modelId: number) {
     const model = this.modelService.findModel(modelId);
     const task = this.findTask(sessionId, taskId) as Task;
+    // Verify that the experiment exists and the model supports it
     if (
       !model.experiments.find(
-        (experiment) => experiment.id === task.setting.id && experiment.conditions.find((condition) => condition === task.setting.condition)
+        (experiment) => experiment.id === task.setting.id
       )
     ) {
       throw new UnprocessableEntityException();

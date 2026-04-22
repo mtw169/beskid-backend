@@ -1,19 +1,27 @@
 [
-    {
-        "id": 1,
-        "name": "model1",
-        "description": "Proof of work AI model (real implementation)",
-        "resolution": 100,
-        "fds": "6.7.6",
-        "experiments": [
-            { "id" : "CONE", "conditions": [65] }
-        ],
-        "templates": [{
-            "file": "template_cone_model1.fds",
-            "experimentId": "CONE",
-            "experimentCondition": 65
-        }],
-        "disabled": false
-    }
-
+  {
+    "id": 1,
+    "name": "model1",
+    "description": "Proof of work AI model (real implementation)",
+    "resolution": 600,
+    "fds": "6.7.6",
+    "experiments": [
+      {
+        "id": "CONE",
+        "conditions": [
+          { "id": "heat_flux", "label": "Heat Flux (kW/m2)", "values": [25, 50, 75] },
+          { "id": "density", "label": "Density (kg/m3)", "values": [900, 950, 1000, 1050, 1100, 1150, 1200, 1250] },
+          { "id": "thickness", "label": "Thickness (mm)", "values": [3, 6, 10] }
+        ]
+      }
+    ],
+    "templates": [
+      {
+        "file": "template_cone_model1.fds",
+        "experimentId": "CONE",
+        "experimentCondition": 65
+      }
+    ],
+    "disabled": false
+  }
 ]

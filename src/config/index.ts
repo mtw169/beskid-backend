@@ -38,8 +38,13 @@ export const models: Model[] = rawModels.map((model) => {
     ...rawExperiments[experiment.id],
     scale: rawScales[rawExperiments[experiment.id].scale],
     conditions: experiment.conditions,
-    conditionMU: rawExperiments[experiment.id].conditionMU,
   }));
+
+  const hasTemplateCondition = (experimentId: string, condition: number) =>
+    !!experiments.find(
+      (experiment) => experiment.id === experimentId && !!experiment.conditions.find((conditionConfig) => conditionConfig.values.includes(condition))
+    );
+
   return new Model({
     id: model.id,
     description: model.description,
@@ -51,12 +56,15 @@ export const models: Model[] = rawModels.map((model) => {
     },
     experiments,
     templates: model.templates
-      .map(template => new Template({
-        templatePath: join(templateDirectory, template.file),
-        experimentId: template.experimentId,
-        condition: template.experimentCondition
-      }))
-      .filter(template => existsSync(template.templatePath) && !!experiments.find(experiment => experiment.id === template.experimentId && experiment.conditions.includes(template.condition))),
+      .map(
+        (template) =>
+          new Template({
+            templatePath: join(templateDirectory, template.file),
+            experimentId: template.experimentId,
+            condition: template.experimentCondition,
+          })
+      )
+      .filter((template) => existsSync(template.templatePath) && hasTemplateCondition(template.experimentId, template.condition)),
     disabled: model.disabled,
   });
 });

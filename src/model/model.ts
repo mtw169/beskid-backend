@@ -15,6 +15,17 @@ export class Scale {
   desc: string;
 }
 
+export class ExperimentCondition {
+  @ApiProperty({ description: 'Condition key' })
+  id: string;
+
+  @ApiProperty({ description: 'Condition label (includes unit)' })
+  label: string;
+
+  @ApiProperty({ type: [Number], description: 'Available condition values' })
+  values: number[];
+}
+
 export class Experiment {
   @ApiProperty({ description: 'Experiment id' })
   id: string;
@@ -25,11 +36,8 @@ export class Experiment {
   @ApiProperty({ type: Scale })
   scale: Scale;
 
-  @ApiProperty({ description: 'Condition measurement unit' })
-  conditionMU: string;
-
-  @ApiProperty({ type: [Number], description: 'Conditions' })
-  conditions: number[];
+  @ApiProperty({ type: [ExperimentCondition], description: 'Configurable experiment conditions' })
+  conditions: ExperimentCondition[];
 }
 
 export class Template {
