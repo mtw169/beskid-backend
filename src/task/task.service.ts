@@ -17,6 +17,7 @@ import { ModelService } from '../model/model.service';
 import { dataDirectory, encoding, extension, trainingDirectory } from '../config';
 import { QueueService } from '../queue/queue.service';
 import * as rawExperiments from '../config/experiments.json';
+import { TemplateConditionValue } from '../model/model';
 
 type TaskResultParam = {
   id: string;
@@ -110,7 +111,7 @@ export class TaskService {
     // eslint-disable-next-line prettier/prettier
     const task = new Task(
       sessionId,
-      parseValues ? this.parseInputfile(join(taskDirectory, inputFilename)) : undefined,
+      parseValues ? this.parseInputfile(join(taskDirectory, inputFilename), setting.resolution) : undefined,
       setting,
       taskId,
       date,
@@ -167,7 +168,7 @@ export class TaskService {
     }
   }
 
-  findTaskResultTemplateData(sessionId: UUID, taskId: UUID, fileId: string, experimentId: string, condition: number): string {
+  findTaskResultTemplateData(sessionId: UUID, taskId: UUID, fileId: string, experimentId: string, condition?: number): string {
     const { taskDirectory } = this.findDirectories(sessionId, taskId);
     if (fileId.endsWith(extension)) {
       fileId = fileId.slice(0, -extension.length);
@@ -181,7 +182,12 @@ export class TaskService {
       if (!model.templates.length) {
         throw new UnprocessableEntityException();
       }
-      const template = model.templates?.find((template) => template.experimentId === experimentId && template.condition === condition);
+      const task = this.findTask(sessionId, taskId) as Task;
+      const template = model.templates?.find(
+        (template) =>
+          template.experimentId === experimentId &&
+          this.matchTemplateConditions(template.conditions, template.condition, task.setting.conditions, condition)
+      );
       if (!template) {
         throw new NotFoundException();
       }
@@ -196,7 +202,7 @@ export class TaskService {
     }
   }
 
-  findTaskResultTemplateFile(sessionId: UUID, taskId: UUID, fileId: string, experimentId: string, condition: number): StreamableFile {
+  findTaskResultTemplateFile(sessionId: UUID, taskId: UUID, fileId: string, experimentId: string, condition?: number): StreamableFile {
     const template = this.findTaskResultTemplateData(sessionId, taskId, fileId, experimentId, condition);
     return new StreamableFile(Buffer.from(template), {
       disposition: `attachment; filename="${fileId.endsWith(extension) ? fileId.slice(0, -extension.length) : fileId}_${experimentId}_${condition}.fds"`,
@@ -288,7 +294,7 @@ export class TaskService {
     return task;
   }
 
-  private parseInputfile = (filepath: string): number[] => {
+  private parseInputfile = (filepath: string, expectedResolution: number): number[] => {
     let values: number[];
     try {
       values = readFileSync(filepath, encoding)
@@ -300,7 +306,7 @@ export class TaskService {
       Logger.error(err, 'TaskService');
       throw new InternalServerErrorException();
     }
-    if (values.length !== 100) {
+    if (values.length !== expectedResolution) {
       throw new NotImplementedException();
     }
     return values;
@@ -326,5 +332,31 @@ export class TaskService {
       throw new InternalServerErrorException('Result file has invalid format');
     }
     return parsed;
+  }
+
+  private matchTemplateConditions(
+    templateConditions: Record<string, TemplateConditionValue> | undefined,
+    templateLegacyCondition: number | undefined,
+    taskConditions: Record<string, number> | undefined,
+    requestedCondition?: number
+  ): boolean {
+    if (templateConditions && Object.keys(templateConditions).length) {
+      if (!taskConditions) {
+        return false;
+      }
+      return Object.entries(templateConditions).every(([key, value]) => {
+        const taskValue = taskConditions[key];
+        if (taskValue === undefined) {
+          return false;
+        }
+        return Array.isArray(value) ? value.includes(taskValue) : taskValue === value;
+      });
+    }
+    // Legacy mode: support existing templates defined only by a single condition value.
+    const conditionToMatch = requestedCondition ?? templateLegacyCondition;
+    if (conditionToMatch === undefined) {
+      return true;
+    }
+    return !!taskConditions && Object.values(taskConditions).includes(conditionToMatch);
   }
 }

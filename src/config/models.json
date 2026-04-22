@@ -19,7 +19,11 @@
       {
         "file": "template_cone_model1.fds",
         "experimentId": "CONE",
-        "experimentCondition": 65
+        "experimentConditions": {
+          "heat_flux": [25, 50, 75],
+          "density": [900, 950, 1000, 1050, 1100, 1150, 1200, 1250],
+          "thickness": [3, 6, 10]
+        }
       }
     ],
     "disabled": false
