@@ -18,6 +18,13 @@ import { dataDirectory, encoding, extension, trainingDirectory } from '../config
 import { QueueService } from '../queue/queue.service';
 import * as rawExperiments from '../config/experiments.json';
 
+type TaskResultParam = {
+  id: string;
+  name: string;
+  value: number;
+  templateOnly?: boolean;
+};
+
 @Injectable()
 export class TaskService {
   constructor(
@@ -145,7 +152,9 @@ export class TaskService {
       throw new NotFoundException();
     }
     try {
-      return JSON.parse(readFileSync(filepath, encoding));
+      const params = this.readTaskResultParams(filepath);
+      // Keep template-only parameters in file downloads, but hide them in the JSON payload for result screens.
+      return params.filter((param) => !param.templateOnly).map(({ id, name, value }) => ({ id, name, value }));
     } catch (err) {
       Logger.error(err, 'TaskService');
       throw new InternalServerErrorException();
@@ -171,7 +180,7 @@ export class TaskService {
         throw new NotFoundException();
       }
       let plaintext = readFileSync(template.templatePath, encoding);
-      JSON.parse(readFileSync(filepath, encoding)).forEach(
+      this.readTaskResultParams(filepath).forEach(
         (param: { id: string; name: string; value: number }) => (plaintext = plaintext.replaceAll(`{${param.id}}`, param.value.toString()))
       );
       return plaintext;
@@ -304,4 +313,12 @@ export class TaskService {
   }
 
   private composedRegex = (...regexes: RegExp[]) => new RegExp(regexes.map((regex) => regex.source).join(''));
+
+  private readTaskResultParams(filepath: string): TaskResultParam[] {
+    const parsed = JSON.parse(readFileSync(filepath, encoding));
+    if (!Array.isArray(parsed)) {
+      throw new InternalServerErrorException('Result file has invalid format');
+    }
+    return parsed;
+  }
 }

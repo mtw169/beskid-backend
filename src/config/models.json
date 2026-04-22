@@ -9,7 +9,7 @@
             { "id" : "CONE", "conditions": [65] }
         ],
         "templates": [{
-            "file": "template_cone_65.fds",
+            "file": "template_cone_model1.fds",
             "experimentId": "CONE",
             "experimentCondition": 65
         }],
