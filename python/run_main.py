@@ -54,12 +54,12 @@ if __name__ == "__main__":
         experiment_condition = json.loads(args.experiment_condition)
 
         # Backwards compatibility if it is just a single number but still valid json
+        # Not really necessary after testing
         if isinstance(experiment_condition, (int, float)):
             experiment_condition = {"heat_flux": experiment_condition}
 
     except json.JSONDecodeError:
-        # Fallback: try parsing as a number (old format)
-        # Backwards compatibility
+        # Backwards compatibility in case it is not valid json
         try:
             value = float(args.experiment_condition)
             experiment_condition = {"heat_flux": value}
@@ -77,6 +77,7 @@ if __name__ == "__main__":
         print(f"Error reading data: {e}")
         sys.exit(1)
 
+    # Manual method if automatically is not safe enough
     # <----- Load models manually ----->
     # import model1.run
     # import model2.run
