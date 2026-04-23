@@ -1,6 +1,6 @@
 import { join, resolve } from 'path';
 import { existsSync } from 'fs';
-import { Experiment, Model, Template, TemplateConditionValue } from '../model/model';
+import { Experiment, Model, Template } from '../model/model';
 import * as rawModels from './models.json';
 import * as rawFDS from './fds.json';
 import * as rawExperiments from './experiments.json';
@@ -40,11 +40,7 @@ export const models: Model[] = rawModels.map((model) => {
     conditions: experiment.conditions,
   }));
 
-  const hasTemplateCondition = (
-    experimentId: string,
-    templateConditions?: Record<string, TemplateConditionValue>,
-    legacyCondition?: number
-  ) => {
+  const hasTemplateCondition = (experimentId: string, templateConditions?: Record<string, number>, legacyCondition?: number) => {
     const experiment = experiments.find((entry) => entry.id === experimentId);
     if (!experiment) {
       return false;
@@ -52,11 +48,7 @@ export const models: Model[] = rawModels.map((model) => {
     if (templateConditions && Object.keys(templateConditions).length) {
       return Object.entries(templateConditions).every(([conditionId, value]) => {
         const config = experiment.conditions.find((condition) => condition.id === conditionId);
-        if (!config) {
-          return false;
-        }
-        const valuesToCheck = Array.isArray(value) ? value : [value];
-        return valuesToCheck.every((entry) => config.values.includes(entry));
+        return !!config && config.values.includes(value);
       });
     }
     if (legacyCondition === undefined) {

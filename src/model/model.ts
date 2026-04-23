@@ -40,8 +40,6 @@ export class Experiment {
   conditions: ExperimentCondition[];
 }
 
-export type TemplateConditionValue = number | number[];
-
 export class Template {
   @Exclude()
   templatePath: string;
@@ -53,12 +51,10 @@ export class Template {
   @ApiProperty({
     description: 'Template conditions keyed by condition id',
     type: 'object',
-    additionalProperties: {
-      oneOf: [{ type: 'number' }, { type: 'array', items: { type: 'number' } }],
-    },
+    additionalProperties: { type: 'number' },
     required: false,
   })
-  conditions?: Record<string, TemplateConditionValue>;
+  conditions?: Record<string, number>;
 
   constructor(partial: Partial<Template>) {
     Object.assign(this, partial);

@@ -17,7 +17,6 @@ import { ModelService } from '../model/model.service';
 import { dataDirectory, encoding, extension, trainingDirectory } from '../config';
 import { QueueService } from '../queue/queue.service';
 import * as rawExperiments from '../config/experiments.json';
-import { TemplateConditionValue } from '../model/model';
 
 type TaskResultParam = {
   id: string;
@@ -335,7 +334,7 @@ export class TaskService {
   }
 
   private matchTemplateConditions(
-    templateConditions: Record<string, TemplateConditionValue> | undefined,
+    templateConditions: Record<string, number | number[]> | undefined,
     templateLegacyCondition: number | undefined,
     taskConditions: Record<string, number> | undefined,
     requestedCondition?: number
