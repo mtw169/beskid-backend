@@ -4,7 +4,7 @@
     "name": "model1",
     "description": "Proof of work AI model (real implementation)",
     "resolution": 600,
-    "fds": "6.7.6",
+    "fds": "6.9.0",
     "experiments": [
       {
         "id": "CONE",
