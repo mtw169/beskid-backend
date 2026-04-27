@@ -107,29 +107,28 @@ def run(experiment_condition: Dict[str, Any], input_data: list) -> list[Dict[str
 
     def param(parameter_id: str, name: str, value: Any, parameter_type: str) -> Dict[str, Any]:
         return {
-            "id": id_,
+            "id": parameter_id,
             "name": name,
             "value": value,
             "parameter_type": parameter_type,
         }
 
-    params = [
-        ("emissivity", "Emissivity"),
-        ("reference_temperature", "Reference temperature"),
-        ("delta_T_K", "Delta T"),
-        ("heat_of_reaction", "Heat of reaction"),
-        ("heat_of_combustion", "Heat of combustion"),
-        ("spec_heat_25", "Specific heat at 25 C"),
-        ("spec_heat_150", "Specific heat at 150 C"),
-        ("spec_heat_500", "Specific heat at 500 C"),
-        ("conductivity_25", "Conductivity at 25 C"),
-        ("conductivity_150", "Conductivity at 150 C"),
-        ("conductivity_500", "Conductivity at 500 C"),
+
+    prediction_param = lambda key,name: param(key, name, pred_full[key], "prediction")
+    prediction_parameter: list[Dict[str, Any]] = [
+        prediction_param("emissivity", "Emissivity"),
+        prediction_param("reference_temperature", "Reference temperature"),
+        prediction_param("delta_T_K", "Delta T"),
+        prediction_param("heat_of_reaction", "Heat of reaction"),
+        prediction_param("heat_of_combustion", "Heat of combustion"),
+        prediction_param("spec_heat_25", "Specific heat at 25 C"),
+        prediction_param("spec_heat_150", "Specific heat at 150 C"),
+        prediction_param("spec_heat_500", "Specific heat at 500 C"),
+        prediction_param("conductivity_25", "Conductivity at 25 C"),
+        prediction_param("conductivity_150", "Conductivity at 150 C"),
+        prediction_param("conductivity_500", "Conductivity at 500 C"),
     ]
 
-    prediction_parameter: list[Dict[str, Any]] = [
-        param(key, name, pred_full[key], "prediction") for key, name in params
-    ]
 
     tend = int(tend)
     nframes = int(nframes)
@@ -142,26 +141,26 @@ def run(experiment_condition: Dict[str, Any], input_data: list) -> list[Dict[str
     density = float(density)
     obst_zmin = thickness + backing_thickness
 
-    template_defs = [
-        ("name", "Case name", case_name),
-        ("tend", "Tend", tend),
-        ("nframes", "Nframes", nframes),
-        ("ambient_temp", "Ambient temperature", ambient_temp),
-        ("matl_mass_fraction", "Material mass fraction", matl_mass_fraction),
-        ("n_reactions", "Number of reactions", n_reactions),
-        ("backing_thickness", "Backing thickness (m)", backing_thickness),
-        ("obst_zmin", "Obstacle z minimum (m)", obst_zmin),
+
+    fds_param = lambda key, name,value: param(key, name, value, 'FDS_parameter')
+    FDS_parameter: list[Dict[str, Any]] = [
+        fds_param("name", "Case name", case_name),
+        fds_param("tend", "Tend", tend),
+        fds_param("nframes", "Nframes", nframes),
+        fds_param("ambient_temp", "Ambient temperature", ambient_temp),
+        fds_param("matl_mass_fraction", "Material mass fraction", matl_mass_fraction),
+        fds_param("n_reactions", "Number of reactions", n_reactions),
+        fds_param("backing_thickness", "Backing thickness (m)", backing_thickness),
+        fds_param("obst_zmin", "Obstacle z minimum (m)", obst_zmin),
 
     ]
 
-    template_parameter: list[Dict[str, Any]] = [
-        param(key, name, value, 'FDS_parameter') for key, name, value in template_defs
-    ]
 
+    input_pram = lambda id_, name, value: param(id_, name, value, 'input')
     input_parameter = [
-        param('heat_flux', 'Heat flux (kW/m²)', heat_flux, 'input'),
-        param('density', 'Density (kg/m³)', density, 'input'),
-        param('thickness', 'Thickness (m)', thickness, 'input'),
+        input_pram('heat_flux', 'Heat flux (kW/m²)', heat_flux ),
+        input_pram('density', 'Density (kg/m³)', density ),
+        input_pram('thickness', 'Thickness (m)', thickness),
     ]
 
-    return prediction_parameter + input_parameter + template_parameter
+    return prediction_parameter + input_parameter + FDS_parameter
