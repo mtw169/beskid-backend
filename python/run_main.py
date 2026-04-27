@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-# Usage: python run_main.py <model_name> <experiment_id> <experiment_condition> <name of input file> <name of output file>
-# Example: python run_main.py model1 TGA 10 sample_input.txt result_model1.json
+# Usage: python run_main.py <model_name> <experiment_id> <experiment_conditions as json> <name of input file> <name of output file>
+# Example: python run_main.py model1 CONE '{"heat_flux": 25}' sample_input.txt result_model1.json
 import argparse
 import importlib.util
 import json
