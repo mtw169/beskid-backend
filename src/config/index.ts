@@ -40,7 +40,11 @@ export const models: Model[] = rawModels.map((model) => {
     conditions: experiment.conditions,
   }));
 
-  const hasTemplateCondition = (experimentId: string, templateConditions?: Record<string, number>, legacyCondition?: number) => {
+  const hasTemplateCondition = (
+    experimentId: string,
+    templateConditions?: Record<string, number | number[]>,
+    legacyCondition?: number
+  ) => {
     const experiment = experiments.find((entry) => entry.id === experimentId);
     if (!experiment) {
       return false;
@@ -48,7 +52,11 @@ export const models: Model[] = rawModels.map((model) => {
     if (templateConditions && Object.keys(templateConditions).length) {
       return Object.entries(templateConditions).every(([conditionId, value]) => {
         const config = experiment.conditions.find((condition) => condition.id === conditionId);
-        return !!config && config.values.includes(value);
+        if (!config) {
+          return false;
+        }
+        const requestedValues = Array.isArray(value) ? value : [value];
+        return requestedValues.every((entry) => config.values.includes(entry));
       });
     }
     if (legacyCondition === undefined) {

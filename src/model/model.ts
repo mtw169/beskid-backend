@@ -51,10 +51,12 @@ export class Template {
   @ApiProperty({
     description: 'Template conditions keyed by condition id',
     type: 'object',
-    additionalProperties: { type: 'number' },
+    additionalProperties: {
+      oneOf: [{ type: 'number' }, { type: 'array', items: { type: 'number' } }],
+    },
     required: false,
   })
-  conditions?: Record<string, number>;
+  conditions?: Record<string, number | number[]>;
 
   constructor(partial: Partial<Template>) {
     Object.assign(this, partial);
