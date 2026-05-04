@@ -17,7 +17,7 @@ def validate_predictions(predictions):
         return False, "Predictions must be a list"
 
     required_keys = {"id", "name", "value"}
-    optional_keys = {"templateOnly"}
+    optional_keys = {"parameter_type"}
 
     for i, item in enumerate(predictions):
         if not isinstance(item, dict):
@@ -28,8 +28,6 @@ def validate_predictions(predictions):
             return False, f"Item at index {i} must include keys {required_keys}, got {item_keys}"
         if not item_keys.issubset(required_keys | optional_keys):
             return False, f"Item at index {i} contains unsupported keys: {item_keys - (required_keys | optional_keys)}"
-        if "templateOnly" in item and not isinstance(item["templateOnly"], bool):
-            return False, f"Item at index {i} has non-boolean templateOnly"
 
     return True, "Valid structure"
 

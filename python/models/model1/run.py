@@ -79,7 +79,7 @@ def run(experiment_condition: Dict[str, Any], input_data: list) -> list[Dict[str
     tail_eps = experiment_condition.get('tail_eps', DEFAULT_TAIL_EPS)
     cut_len = experiment_condition.get('cut_len', DEFAULT_CUT_LEN)
 
-    # Template Parameters , should also not be changed
+    # Template Parameters, should also not be changed
     case_name = experiment_condition.get('case_name', DEFAULT_CASE_NAME)
     tend = experiment_condition.get('tend', DEFAULT_TEND)
     nframes = experiment_condition.get('nframes', DEFAULT_NFRAMES)
